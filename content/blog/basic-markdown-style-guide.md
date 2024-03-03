@@ -93,4 +93,4 @@ Syntax highlighting is done using [Prism.js](https://github.com/PrismJS/prism). 
 
 ## Images
 
-![Blogster](/images/landscape.jpg)
+![Blogster](/images/heder.png)
