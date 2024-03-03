@@ -1,0 +1,24 @@
+---
+import PageMeta from "../components/PageMeta.astro";
+import PageLayout from "../layouts/PageLayout.astro";
+import Intro from "../components/Intro.astro";
+import AboutTheTheme from "../components/AboutTheTheme.astro";
+import { SITE_TITLE } from "../config";
+---
+
+<PageLayout>
+  <PageMeta title={`${SITE_TITLE} | Web Ninja`} slot="meta" />
+  <Fragment slot="main">
+    -----BEGIN PGP PUBLIC KEY BLOCK-----
+    mDMEZeRcDRYJKwYBBAHaRw8BAQdAVIZeG7dS9+am78boFomUMqdYn4HC9oL7xVqe
+    RBHs8yi0JsONw7FpZ28gQXLDqWp1bGEgPGFyZWp1bGEyN0BnbWFpbC5jb20+iJkE
+    ExYKAEEWIQTy0TOBY06wz4bC9DgNhq/dBiHQWwUCZeRcDQIbAwUJBaOWowULCQgH
+    AgIiAgYVCgkICwIEFgIDAQIeBwIXgAAKCRANhq/dBiHQW4d7AP413Tsnerbm9GWc
+    lnb2esZaj/ctBERm7ikLUBtKgs4L3AEA+o2I6TEdG5QMTCaZn/OiQ3djRCMo1c3Q
+    ANWRDu775Qy4OARl5FwNEgorBgEEAZdVAQUBAQdAgjbzXIx8+FIhtcQ+j/oBot0Q
+    yIHiE1k+6NtuqoL7YygDAQgHiH4EGBYKACYWIQTy0TOBY06wz4bC9DgNhq/dBiHQ
+    WwUCZeRcDQIbDAUJBaOWowAKCRANhq/dBiHQWxVIAQCD6EVJZXq3xFYKe3s32bND
+    S+wbkBr3IN/n26TE3UBVCQEAjRfA8V2ks8OlrphMY23IG4A3S98O/hsQ4ZFx/kEI LA0= =1NCO
+    -----END PGP PUBLIC KEY BLOCK-----
+  </Fragment>
+</PageLayout>
