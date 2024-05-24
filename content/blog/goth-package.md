@@ -3,7 +3,7 @@ external: false
 draft: false 
 title: Authenticating with Goth package 
 description: It's a beautiful world out there.
-date: 2024-5-24
+date: 2024-05-24
 ---
 # Goth package
 
