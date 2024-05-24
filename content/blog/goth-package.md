@@ -3,10 +3,8 @@ external: false
 draft: false 
 title: Authenticating with Goth package 
 description: Article on how to authenticate users in web applications using the Goth package and Echo framework in Golang.
-date: 2024-5-24
+date: 2024-05-24
 ---
-# Goth package
-
 This is a Go package that provides a simple way to authenticate users in web applications. It provides a simple API for authentication in many providers, including Google, GitHub, and Facebook.
 
 This manual uses the Echo framework. In case of using just the standard library see this [example](https://github.com/markbates/goth/blob/master/examples/main.go) and for `chi` watch this [video](https://www.youtube.com/watch?v=iHFQyd__2A0&t=505s).
@@ -128,4 +126,7 @@ func AuthorizationMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 This function receives a `echo.HandlerFunc` and returns the same so it can be used as middleware in [[Echo]]. It will retrieve the user from the session. If everything works fine the user is logged and the middleware would continue to the handler. In case soemthing wrong happens the application would return an error `401 Unauthorized` .
 
 At the end of the function the data retrieve from the session will b stored in the request context so it can be used in the handler.
+
+## Conclusion
+This package is a great way to authenticate users in web applications. It provides a simple API for authentication in many providers, including Google, GitHub, and Facebook. It is easy to use and configure, and it works well with the Echo framework.  You can find the complete code in this [repository](https://github.com/arejula27/go-lab/tree/main/auth).
 
