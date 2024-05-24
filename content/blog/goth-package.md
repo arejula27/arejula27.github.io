@@ -5,7 +5,6 @@ title: Authenticating with Goth package
 description: It's a beautiful world out there.
 date: 2024-05-24
 ---
-# Goth package
 
 This is a Go package that provides a simple way to authenticate users in web applications. It provides a simple API for authentication in many providers, including Google, GitHub, and Facebook.
 
