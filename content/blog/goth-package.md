@@ -2,20 +2,28 @@
 external: false
 draft: false 
 title: Authenticating with Goth package 
-description: Article on how to authenticate users in web applications using the Goth package and Echo framework in Golang.
+description: Learn how to authenticate users in web applications using the Goth package and Echo framework in Golang. This package  provides a simple API for authentication in many providers, including Google, GitHub, and Facebook.
 date: 2024-05-24
 ---
-This is a Go package that provides a simple way to authenticate users in web applications. It provides a simple API for authentication in many providers, including Google, GitHub, and Facebook.
 
-This manual uses the Echo framework. In case of using just the standard library see this [example](https://github.com/markbates/goth/blob/master/examples/main.go) and for `chi` watch this [video](https://www.youtube.com/watch?v=iHFQyd__2A0&t=505s).
+One of the most common tasks in web development is user authentication. You need a way to verify that the user is who they say so you can allow them to access their data.
+
+Nowadays, there are many ways to authenticate users. Some developers implement their own authentication system, however I tried to explore how to use a third-party service to authenticate users with their Google, Facebook, or GitHub accounts.
+
+In the JavaScript ecosystem I used [Passport.js](https://www.passportjs.org/), this library provides a common interface for authenticating users in many providers. In the Go ecosystem, I found the [Goth](https://github.com/markbates/goth) package.
+
+
+In this article I will explain with code examples how to implement an authentication and authorization system for a  [Echo](https://echo.labstack.com/) server. In case you prefer to use the standard library see this [example](https://github.com/markbates/goth/blob/master/examples/main.go) and for `chi` watch this [video](https://www.youtube.com/watch?v=iHFQyd__2A0&t=505s).
+
+I will supose that you have a basic knowledge of Go and Echo and you have a project already set up.
+
 ## Installation
-
+The first step is to install the package using the `go get` command.
 ```bash
 go get github.com/markbates/goth
 ```
 ## Usage
-
-It works using the [gorilla/sessions](https://github.com/gorilla/sessions) package, so it is required to config the `Store` before using it.
+The `goth` package works using the [gorilla/sessions](https://github.com/gorilla/sessions) package, so it is required to configure the `Store` before using it.
 
 ```go
 store := sessions.NewCookieStore([]byte(key))
