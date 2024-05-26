@@ -1,7 +1,7 @@
 ---
 external: false
 draft: false 
-title: Authenticating with Goth package 
+title: Authenticating in Golang webs with Goth package 
 description: Learn how to authenticate users in web applications using the Goth package and Echo framework in Golang. This package  provides a simple API for authentication in many providers, including Google, GitHub, and Facebook.
 date: 2024-05-24
 ---
