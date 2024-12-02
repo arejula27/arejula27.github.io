@@ -3,6 +3,7 @@ title = 'Authenticating in Golang webs with Goth package'
 date = 2024-05-24T02:45:08+01:00
 draft = false
 description= "Learn how to authenticate users in web applications using the Goth package and Echo framework in Golang. This package  provides a simple API for authentication in many providers, including Google, GitHub, and Facebook."
+ShowToc= true
 +++
 
 One of the most common tasks in web development is user authentication. You need a way to verify that the user is who they say so you can allow them to access their data.

@@ -105,17 +105,37 @@
 
 <article class="post-single">
   <header class="post-header">
-    
+    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/posts/">Posts</a></div>
     <h1 class="post-title entry-hint-parent">
       Authenticating in Golang webs with Goth package
     </h1>
     <div class="post-description">
       Learn how to authenticate users in web applications using the Goth package and Echo framework in Golang. This package  provides a simple API for authentication in many providers, including Google, GitHub, and Facebook.
     </div>
-    <div class="post-meta"><span title='2024-05-24 02:45:08 +0100 +0100'>May 24, 2024</span>
+    <div class="post-meta"><span title='2024-05-24 02:45:08 +0100 +0100'>May 24, 2024</span>&nbsp;·&nbsp;5 min
 
 </div>
-  </header> 
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#installation" aria-label="Installation">Installation</a></li>
+                <li>
+                    <a href="#usage" aria-label="Usage">Usage</a></li>
+                <li>
+                    <a href="#authorization-middleware" aria-label="Authorization middleware">Authorization middleware</a></li>
+                <li>
+                    <a href="#conclusion" aria-label="Conclusion">Conclusion</a>
+                </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
   <div class="post-content"><p>One of the most common tasks in web development is user authentication. You need a way to verify that the user is who they say so you can allow them to access their data.</p>
 <p>Nowadays, there are many ways to authenticate users. Some developers implement their own authentication system, however I tried to explore how to use a third-party service to authenticate users with their Google, Facebook, or GitHub accounts.</p>
 <p>In the JavaScript ecosystem I used <a href="https://www.passportjs.org/">Passport.js</a>, this library provides a common interface for authenticating users in many providers. In the Go ecosystem, I found the <a href="https://github.com/markbates/goth">Goth</a> package.</p>
