@@ -24,6 +24,9 @@ menu:
 params:
   ShowReadingTime: true
   ShowBreadCrumbs: true
+  env: production
+  ShowCodeCopyButtons: true
+  ShowRssButtonInSectionTermList: true
   homeInfoParams:
     Title: Hi there! I'm Íñigo Aréjula.
     Content: Software engineer and FOSS enthusiast. I write about software development, learning and other things.
@@ -35,3 +38,38 @@ params:
       url: "linkedin.com/in/íñigo-arejula"
     - name: "email"
       url: "mailto:arejula27@gmail.com"
+
+languages:
+  en:
+    languageName: ":uk:"
+    weight: 1
+    taxonomies:
+      tag: tags
+  es:
+    languageName: ":es:"
+    weight: 2
+    taxonomies:
+      tag: etiquetas
+    menu:
+      main:
+        - identifier: "Archivos"
+          name: "Archivos"
+          url: "/es/archives/"
+          weight: 10
+        - identifier: "Etiquetas"
+          name: "Etiquetas"
+          url: "/etiquetas/"
+          weight: 20
+        - identifier: "CV"
+          name: "CV"
+          url: "/CV_inigo_arejula.pdf"
+          weight: 30
+    params:
+      homeInfoParams:
+        Title: ¡Hola! Soy Íñigo Aréjula.
+        Content: Ingeniero de software y entusiasta del software libre. Escribo sobre desarrollo de software, aprendizaje y otras cosas.
+outputs:
+  home:
+    - HTML
+    - RSS
+    - JSON

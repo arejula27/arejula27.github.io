@@ -1,10 +1,10 @@
 +++
-title = 'Authenticating in Golang webs with Goth package'
+title = 'Authenticating in Golang  servers with Goth package'
 date = 2024-05-24T02:45:08+01:00
 draft = false
 description= "Learn how to authenticate users in web applications using the Goth package and Echo framework in Golang. This package  provides a simple API for authentication in many providers, including Google, GitHub, and Facebook."
 ShowToc= true
-tags= ["golang", "web", "authentication", "goth", "echo","English"]
+tags= ["golang", "web", "authentication", "goth", "echo"]
 +++
 
 One of the most common tasks in web development is user authentication. You need a way to verify that the user is who they say so you can allow them to access their data.
@@ -132,7 +132,7 @@ func AuthorizationMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 
 }
 ```
-This function receives a `echo.HandlerFunc` and returns the same so it can be used as middleware in [[Echo]]. It will retrieve the user from the session. If everything works fine the user is logged and the middleware would continue to the handler. In case soemthing wrong happens the application would return an error `401 Unauthorized` .
+This function receives a `echo.HandlerFunc` and returns the same so it can be used as middleware in `Echo`. It will retrieve the user from the session. If everything works fine the user is logged and the middleware would continue to the handler. In case soemthing wrong happens the application would return an error `401 Unauthorized` .
 
 At the end of the function the data retrieve from the session will b stored in the request context so it can be used in the handler.
 
