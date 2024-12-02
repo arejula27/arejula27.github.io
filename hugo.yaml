@@ -2,6 +2,21 @@ baseURL: https://arejula27.github.io
 languageCode: en-us
 title: Íñigo Aréjula
 theme: ["PaperMod"]
+enableEmoji: true
+taxonomies:
+  category: "Categories"
+  tag: "Tags"
+menu:
+  main:
+    - identifier: "Archives"
+      name: "Archives"
+      url: "/archives/"
+      weight: 10
+    - identifier: "Tags"
+      name: "Tags"
+      url: "/tags/"
+      weight: 20
+
 params:
   ShowReadingTime: true
   ShowBreadCrumbs: true
