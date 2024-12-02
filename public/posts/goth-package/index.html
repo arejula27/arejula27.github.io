@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>Authenticating in Golang webs with Goth package | Íñigo Aréjula</title>
+<meta name="keywords" content="">
+<meta name="description" content="Learn how to authenticate users in web applications using the Goth package and Echo framework in Golang. This package  provides a simple API for authentication in many providers, including Google, GitHub, and Facebook.">
+<meta name="author" content="">
+<link rel="canonical" href="http://localhost:1313/posts/goth-package/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.d6fcd20a4fb86efa4dfac8ec95da60244cc8871042183da1ef28e3a762ad79c8.css" integrity="sha256-1vzSCk&#43;4bvpN&#43;sjsldpgJEzIhxBCGD2h7yjjp2Ktecg=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/goth-package/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="Íñigo Aréjula (Alt + H)">Íñigo Aréjula</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    
+    <h1 class="post-title entry-hint-parent">
+      Authenticating in Golang webs with Goth package
+    </h1>
+    <div class="post-description">
+      Learn how to authenticate users in web applications using the Goth package and Echo framework in Golang. This package  provides a simple API for authentication in many providers, including Google, GitHub, and Facebook.
+    </div>
+    <div class="post-meta"><span title='2024-05-24 02:45:08 +0100 +0100'>May 24, 2024</span>
+
+</div>
+  </header> 
+  <div class="post-content"><p>One of the most common tasks in web development is user authentication. You need a way to verify that the user is who they say so you can allow them to access their data.</p>
+<p>Nowadays, there are many ways to authenticate users. Some developers implement their own authentication system, however I tried to explore how to use a third-party service to authenticate users with their Google, Facebook, or GitHub accounts.</p>
+<p>In the JavaScript ecosystem I used <a href="https://www.passportjs.org/">Passport.js</a>, this library provides a common interface for authenticating users in many providers. In the Go ecosystem, I found the <a href="https://github.com/markbates/goth">Goth</a> package.</p>
+<p>In this article I will explain with code examples how to implement an authentication and authorization system for a  <a href="https://echo.labstack.com/">Echo</a> server. In case you prefer to use the standard library see this <a href="https://github.com/markbates/goth/blob/master/examples/main.go">example</a> and for <code>chi</code> watch this <a href="https://www.youtube.com/watch?v=iHFQyd__2A0&amp;t=505s">video</a>.</p>
+<p>I will supose that you have a basic knowledge of Go and Echo and you have a project already set up.</p>
+<h2 id="installation">Installation<a hidden class="anchor" aria-hidden="true" href="#installation">#</a></h2>
+<p>The first step is to install the package using the <code>go get</code> command.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>go get github.com/markbates/goth
+</span></span></code></pre></div><h2 id="usage">Usage<a hidden class="anchor" aria-hidden="true" href="#usage">#</a></h2>
+<p>The <code>goth</code> package works using the <a href="https://github.com/gorilla/sessions">gorilla/sessions</a> package, so it is required to configure the <code>Store</code> before using it.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#a6e22e">store</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">sessions</span>.<span style="color:#a6e22e">NewCookieStore</span>([]byte(<span style="color:#a6e22e">key</span>))
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">store</span>.<span style="color:#a6e22e">MaxAge</span>(<span style="color:#a6e22e">MaxAge</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">store</span>.<span style="color:#a6e22e">Options</span>.<span style="color:#a6e22e">Path</span> = <span style="color:#e6db74">&#34;/&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">store</span>.<span style="color:#a6e22e">Options</span>.<span style="color:#a6e22e">HttpOnly</span> = <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">store</span>.<span style="color:#a6e22e">Options</span>.<span style="color:#a6e22e">Secure</span> = <span style="color:#a6e22e">IsProd</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">gothic</span>.<span style="color:#a6e22e">Store</span> = <span style="color:#a6e22e">store</span>
+</span></span></code></pre></div><p>Then all wanted providers must be configured, see the <a href="https://github.com/markbates/goth#supported-providers">supported providers</a> for more information.
+Each provider has its own configuration, but all of them expose the same interface. In the following example, we configure the Google provider, it requires a <code>ClientID</code>, <code>ClientSecret</code>, and a <code>CallbackURL</code>. The first two are provided by Google in the <a href="https://console.developers.google.com/">Google Developer Console</a>, and the last one is the URL where the user will be redirected after the authentication process (we will set it up later).</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#a6e22e">googleClientID</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">os</span>.<span style="color:#a6e22e">Getenv</span>(<span style="color:#e6db74">&#34;GOOGLE_CLIENT_ID&#34;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">googleClientSecret</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">os</span>.<span style="color:#a6e22e">Getenv</span>(<span style="color:#e6db74">&#34;GOOGLE_CLIENT_SECRET&#34;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">goth</span>.<span style="color:#a6e22e">UseProviders</span>(<span style="color:#a6e22e">google</span>.<span style="color:#a6e22e">New</span>(<span style="color:#a6e22e">googleClientID</span>, <span style="color:#a6e22e">googleClientSecret</span>, <span style="color:#e6db74">&#34;http://localhost:3000/auth/google/callback&#34;</span>))
+</span></span></code></pre></div><p>This packages requires a few routes to be set up, <code>login</code>, <code>callback</code> and <code>logout</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">GET</span>(<span style="color:#e6db74">&#34;/auth/:provider/callback&#34;</span>, <span style="color:#a6e22e">googleCallback</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">GET</span>(<span style="color:#e6db74">&#34;/logout/:provider&#34;</span>, <span style="color:#a6e22e">logout</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">GET</span>(<span style="color:#e6db74">&#34;/login/:provider&#34;</span>, <span style="color:#a6e22e">auth</span>)
+</span></span></code></pre></div><p>The <code>:provider</code> parameter is required because <code>goth</code> supports multiple providers, so it needs to know which one to use and it detect it by the URL.</p>
+<p>The <code>googleCallback</code> will be called after google authenticates the user and will receive the user data</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">googleCallback</span>(<span style="color:#a6e22e">c</span> <span style="color:#a6e22e">echo</span>.<span style="color:#a6e22e">Context</span>) <span style="color:#66d9ef">error</span> {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">user</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">gothic</span>.<span style="color:#a6e22e">CompleteUserAuth</span>(<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">Response</span>(), <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">Request</span>())
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Println</span>(<span style="color:#a6e22e">err</span>)
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">String</span>(<span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">StatusInternalServerError</span>, <span style="color:#e6db74">&#34;Error&#34;</span>)
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//save the user to the session
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	<span style="color:#a6e22e">userJSON</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">json</span>.<span style="color:#a6e22e">Marshal</span>(<span style="color:#a6e22e">user</span>)
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">err</span>
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">err</span> = <span style="color:#a6e22e">gothic</span>.<span style="color:#a6e22e">StoreInSession</span>(<span style="color:#e6db74">&#34;user&#34;</span>, string(<span style="color:#a6e22e">userJSON</span>), <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">Request</span>(), <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">Response</span>())
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">err</span>
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">Redirect</span>(<span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">StatusTemporaryRedirect</span>, <span style="color:#e6db74">&#34;/user&#34;</span>)
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>As <code>goth</code> do not save any data in the session we also add some data to it so we can used later in our app. It is done by the <code>gothic.StoreInSession</code> function. In this case the whole user is stored but it will be better to save only the gmail.</p>
+<p>At the end the function will redirect to a restricted route.</p>
+<p>The <code>auth</code> function is responsible for login the user in the application. It must be called from a button in the HTML code.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">auth</span>(<span style="color:#a6e22e">c</span> <span style="color:#a6e22e">echo</span>.<span style="color:#a6e22e">Context</span>) <span style="color:#66d9ef">error</span> {
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">_</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">gothic</span>.<span style="color:#a6e22e">GetFromSession</span>(<span style="color:#e6db74">&#34;user&#34;</span>, <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">Request</span>())
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">//if the user is already logged in, redirect to the user page
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">==</span> <span style="color:#66d9ef">nil</span> {
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">Redirect</span>(<span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">StatusTemporaryRedirect</span>, <span style="color:#e6db74">&#34;/user&#34;</span>)
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">provider</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">Param</span>(<span style="color:#e6db74">&#34;provider&#34;</span>)
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">res</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">Response</span>()
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">req</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">Request</span>().<span style="color:#a6e22e">WithContext</span>(<span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">WithValue</span>(<span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Background</span>(), <span style="color:#e6db74">&#34;provider&#34;</span>, <span style="color:#a6e22e">provider</span>))
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">gothic</span>.<span style="color:#a6e22e">BeginAuthHandler</span>(<span style="color:#a6e22e">res</span>, <span style="color:#a6e22e">req</span>)
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>As the user is saved in the session first we check if the user is already logged, in that case it will be redirect. In the other hand we will use the <code>gothic.BeginAuthHandler</code> function for request the credentials to teh user via the provider specified.</p>
+<p>As we are using echo framework it is required to save the provider in the context, however if we are using the standard library this is not needed.</p>
+<p>Finally we have to add a endpoint to logout.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">logout</span>(<span style="color:#a6e22e">c</span> <span style="color:#a6e22e">echo</span>.<span style="color:#a6e22e">Context</span>) <span style="color:#66d9ef">error</span> {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">provider</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">Param</span>(<span style="color:#e6db74">&#34;provider&#34;</span>)
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">res</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">Response</span>()
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">req</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">Request</span>().<span style="color:#a6e22e">WithContext</span>(<span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">WithValue</span>(<span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Background</span>(), <span style="color:#e6db74">&#34;provider&#34;</span>, <span style="color:#a6e22e">provider</span>))
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">gothic</span>.<span style="color:#a6e22e">Logout</span>(<span style="color:#a6e22e">res</span>, <span style="color:#a6e22e">req</span>)
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">Redirect</span>(<span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">StatusTemporaryRedirect</span>, <span style="color:#e6db74">&#34;/&#34;</span>)
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h2 id="authorization-middleware">Authorization middleware<a hidden class="anchor" aria-hidden="true" href="#authorization-middleware">#</a></h2>
+<p>This package help us to login using a third party and create the session for the user. However, it does not provide a middleware for checking if the user is logged in or not. For that we must implement a small middleware that will be executed before our HTTP handler.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">AuthorizationMiddleware</span>(<span style="color:#a6e22e">next</span> <span style="color:#a6e22e">echo</span>.<span style="color:#a6e22e">HandlerFunc</span>) <span style="color:#a6e22e">echo</span>.<span style="color:#a6e22e">HandlerFunc</span> {
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">func</span>(<span style="color:#a6e22e">c</span> <span style="color:#a6e22e">echo</span>.<span style="color:#a6e22e">Context</span>) <span style="color:#66d9ef">error</span> {
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">//check the session is valid
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>		<span style="color:#a6e22e">userJSON</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">gothic</span>.<span style="color:#a6e22e">GetFromSession</span>(<span style="color:#e6db74">&#34;user&#34;</span>, <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">Request</span>())
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">JSON</span>(<span style="color:#ae81ff">401</span>, <span style="color:#66d9ef">map</span>[<span style="color:#66d9ef">string</span>]<span style="color:#66d9ef">string</span>{<span style="color:#e6db74">&#34;message&#34;</span>: <span style="color:#e6db74">&#34;Unauthorized&#34;</span>})
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">var</span> <span style="color:#a6e22e">user</span> <span style="color:#a6e22e">goth</span>.<span style="color:#a6e22e">User</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">err</span> = <span style="color:#a6e22e">json</span>.<span style="color:#a6e22e">Unmarshal</span>([]byte(<span style="color:#a6e22e">userJSON</span>), <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">user</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">JSON</span>(<span style="color:#ae81ff">401</span>, <span style="color:#66d9ef">map</span>[<span style="color:#66d9ef">string</span>]<span style="color:#66d9ef">string</span>{<span style="color:#e6db74">&#34;message&#34;</span>: <span style="color:#e6db74">&#34;Unauthorized&#34;</span>})
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">Set</span>(<span style="color:#e6db74">&#34;user&#34;</span>, <span style="color:#a6e22e">user</span>)
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">next</span>(<span style="color:#a6e22e">c</span>)
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>This function receives a <code>echo.HandlerFunc</code> and returns the same so it can be used as middleware in [[Echo]]. It will retrieve the user from the session. If everything works fine the user is logged and the middleware would continue to the handler. In case soemthing wrong happens the application would return an error <code>401 Unauthorized</code> .</p>
+<p>At the end of the function the data retrieve from the session will b stored in the request context so it can be used in the handler.</p>
+<h2 id="conclusion">Conclusion<a hidden class="anchor" aria-hidden="true" href="#conclusion">#</a></h2>
+<p>This package is a great way to authenticate users in web applications. It provides a simple API for authentication in many providers, including Google, GitHub, and Facebook. It is easy to use and configure, and it works well with the Echo framework.  You can find the complete code in this <a href="https://github.com/arejula27/go-lab/tree/main/auth">repository</a>.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2024 <a href="http://localhost:1313/">Íñigo Aréjula</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>
