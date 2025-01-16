@@ -137,4 +137,6 @@ Finally, we defined the `shellHook` attribute that is a script that is executed 
 
 ## Conclusion
 
+In this article we learned the advantages of using development environments, how to define a development environment with Nix and how to define a custom package in Nix. We also learned how to define a `shell.nix` file that is used to define a development environment in Nix.
 
+Despite Nix is not a new technology (was realized in 2003), it is not as popular as other package managers like apt or brew or even as Docker for defining environments.  This means that the support for Nix is not as wide as other technologies, while VSCode and Intellij has a plugin to work with Docker devcontainers, there is no plugin for Nix. However, the Nix community is growing and there are many projects that are using Nix for defining their environments.  I find Nix a great tool for defining development environments, it is easy to use, it is reproducible and it removes all the issues I had with Docker containers. I recommend you to give it a try. 
