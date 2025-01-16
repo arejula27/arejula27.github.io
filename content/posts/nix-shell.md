@@ -53,7 +53,6 @@ For example, let's add `zulu8` (a Java distribution):
 ```nix
 { pkgs ? import <nixpkgs> {} }:
 
-```nix
 { pkgs ? import <nixpkgs> {} }:
 pkgs.mkShell {
   packages= [
@@ -117,12 +116,12 @@ I added too many lines to the file, so lets explain them. First of all we divide
 
 The idea behind this structure is to define a variable `spark` with our new packae and them addin it to the `packages` attribute of the shell. We also added the spark version and the hash of the tarball as variables for making the file easier to maintain however we could have added them directly in the derivation.
 
-Now, lets explain how we defined our scala package. It is defined by a expression that in the Nix language is called a derivation. A derivation is a set of attributes that define a package. In this case we defined the `pname` and `version` attributes that are the name and version of the package. 
+Now, lets explain how we defined our scala package. It is defined by a expression that in the Nix language is called a derivation. A derivation is a set of attributes that define a package. In this case we defined the `pname` and `version` attributes that are the name and version of the package.
 
 
 
 
-The `mkDerivation` function is a function that creates a package, it receives a set of attributes that define the package. The most important attributes are `installPhase` that defines the steps to install the package and `meta` that defines the metadata of the package. 
+The `mkDerivation` function is a function that creates a package, it receives a set of attributes that define the package. The most important attributes are `installPhase` that defines the steps to install the package and `meta` that defines the metadata of the package.
 
 We also defined a variable `src` where we download the tarball from the Apache website. We used the `fetchurl` function that downloads the file and checks the hash. Notice that this function is not a builtin function from nix, but is located insie a packages in nixpaks so we can access it with the `pkgs.` prefix.
 
@@ -130,7 +129,7 @@ After dowloading the tarball we defined the `installPhase` attribute that is a s
 
 We defined the `meta` attribute that is a set of metadata of the package. In this case we defined the description, the license and the homepage of the package
 
-After defining the package we added it to the `packages` attribute of the shell. We also defined the `SPARK_HOME` environment variable that points to the location of the spark package. 
+After defining the package we added it to the `packages` attribute of the shell. We also defined the `SPARK_HOME` environment variable that points to the location of the spark package.
 
 
 Finally, we defined the `shellHook` attribute that is a script that is executed each time the user starts the shell. In this case we used it to print a message with the version of the spark package and the location of the `SPARK_HOME` variable.
@@ -139,4 +138,4 @@ Finally, we defined the `shellHook` attribute that is a script that is executed 
 
 In this article we learned the advantages of using development environments, how to define a development environment with Nix and how to define a custom package in Nix. We also learned how to define a `shell.nix` file that is used to define a development environment in Nix.
 
-Despite Nix is not a new technology (was realized in 2003), it is not as popular as other package managers like apt or brew or even as Docker for defining environments.  This means that the support for Nix is not as wide as other technologies, while VSCode and Intellij has a plugin to work with Docker devcontainers, there is no plugin for Nix. However, the Nix community is growing and there are many projects that are using Nix for defining their environments.  I find Nix a great tool for defining development environments, it is easy to use, it is reproducible and it removes all the issues I had with Docker containers. I recommend you to give it a try. 
+Despite Nix is not a new technology (was realized in 2003), it is not as popular as other package managers like apt or brew or even as Docker for defining environments.  This means that the support for Nix is not as wide as other technologies, while VSCode and Intellij has a plugin to work with Docker devcontainers, there is no plugin for Nix. However, the Nix community is growing and there are many projects that are using Nix for defining their environments.  I find Nix a great tool for defining development environments, it is easy to use, it is reproducible and it removes all the issues I had with Docker containers. I recommend you to give it a try.
