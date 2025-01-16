@@ -1,6 +1,6 @@
 +++
 title = 'Create development environment with Nix'
-date = 2024-12-04T12:46:40+01:00
+date = 2025-01-01T12:46:40+01:00
 draft = false
 tags = ['nix','containers', 'docker','devenvironment']
 +++
