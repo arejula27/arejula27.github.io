@@ -7,7 +7,7 @@ tags = ['nix','containers', 'docker','devenvironment']
 
 One of the challenges for many projects is having an easy way to configure and set up the environment. This becomes even more important when an open-source project is looking for contributors. There are plenty of tools in the market that can help with these tasks. In this post, I’ll dive deeper into development environments, which are a subcategory of tools that install and configure all the external dependencies a project needs to run, requiring no manual intervention from the developer and giving him all the required tools for start working.
 
-==ADD the idea of as an FOSS enthusiats portability is key, and the importance of having a reproducible environment==
+==TODO: ADD the idea of as an FOSS enthusiats portability is key, and the importance of having a reproducible environment==
 
 
 Development environments are a game-changer for any project. They not only make it easier for new contributors to start working on the project, but also help with many other common issues in software development. Using a development environment ensures that every developer shares the same setup, which can help avoid common issues such as *it works on my machine* or *it works on my machine but not on yours*. It also helps keeping the project dependencies up to date. It can even be used in your DevOps pipeline to ensure that the project is always built in the same environment. What a dream, right? Now any project is totally reproducible.
