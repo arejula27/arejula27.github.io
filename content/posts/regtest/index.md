@@ -11,13 +11,19 @@ Regtest (short for Regression Test mode) lets you create a private Bitcoin netwo
 
 In this guide, we’ll walk through setting up a Regtest environment from scratch in an Ubuntu 20.04 VM. You can use a different version, but some steps may vary. This will allow you to experiment with Bitcoin on your own terms. Let’s get started!
 
-## Step 1: Install Bitcoin Core
+## Step 1:Create a new Ubuntu 20.04 VM 
+Requirements:
+- 50	GB of disk space
+- 6 GB of RAM
+
+## Step 2: Install Bitcoin Core
 
 Alright, first things first—let’s get Bitcoin Core installed and running in Regtest mode.
 
 Start by downloading [Bitcoin Core](https://bitcoin.org/en/download). Since we’re using Linux, we need to extract the .tar.gz file. Once extracted, we’ll copy all binaries from the bin folder to /usr/bin so they’re accessible system-wide:
 ```bash
-sudo cp path/to/extracted/bitcoin/bin/* /usr/bin
+tar -xzvf  <bitcoin-core-version>-x86_64-linux-gnu.tar.gz
+sudo cp <bitcoin-core-version>/bin/* /usr/bin
 ```
 This ensures you can run Bitcoin Core commands from anywhere in the terminal. Now, let’s move on to configuring Regtest mode!
 
