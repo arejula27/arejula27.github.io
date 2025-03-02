@@ -1,10 +1,11 @@
 +++
-title = 'Regtest'
+title = 'Create your own Bitcoin network with Regtest in Ubuntu 20.04'
 date = 2025-03-02T15:29:21+01:00
 draft = true
+tags = ['bitcoin', 'regtest', 'ubuntu', 'crypto']
+description = "The first approach to bitcoin is always a bit overwhelming, while hands-on experience is the best way to learn, no one wants to risk losing money in the process. That’s where Bitcoin Regtest comes in—a private, customizable testing environment that lets you explore Bitcoin’s mechanics safely. Whether you’re developing, testing transactions, or experimenting with new ideas, Regtest allows you to mine blocks instantly, bypass fees, and make mistakes without real-world consequences.  In this guide, we’ll walk through setting up a Regtest environment from scratch in an Ubuntu 20.04 VM. You can use a different version, but some steps may vary. This will allow you to experiment with Bitcoin on your own terms. Let’s get started!"
 +++
-
-If you’re building, testing, or experimenting with Bitcoin, you need a safe and flexible environment—one where you can instantly mine blocks, test transactions without fees, and break things without consequences. That’s exactly what Bitcoin Regtest is for.
+The first approach to bitcoin is always a bit overwhelming, while hands-on experience is the best way to learn, no one wants to risk losing money in the process. That’s where Bitcoin Regtest comes in—a private, customizable testing environment that lets you explore Bitcoin’s mechanics safely. Whether you’re developing, testing transactions, or experimenting with new ideas, Regtest allows you to mine blocks instantly, bypass fees, and make mistakes without real-world consequences.
 
 Regtest (short for Regression Test mode) lets you create a private Bitcoin network on your own machine. Unlike Testnet or Mainnet, it gives you full control over block generation and confirmations, making it perfect for development, debugging, and learning how Bitcoin works under the hood.
 
@@ -49,13 +50,10 @@ If everything is working, you should see detailed information about your Regtest
 
 
 To stop Bitcoin Core, simply press `Ctrl + C` in the terminal where `bitcoind` is running.
-
-
- ==TODO==
-Want to run Bitcoin Core as a service? Create a systemd service file at /etc/systemd/system/bitcoind.service:
-
+Now we are going to create a systemd service to run Bitcoin Core as a service, so it starts automatically when the computer boots up. Create a file at `/etc/systemd/system/bitcoind.service` with the following content, replacing `<your-username>` with your actual username:
+```
 [Unit]
-Description=Bitcoin Daemon
+Description=Bitcoin regtest Daemon
 After=network.target
 
 [Service]
@@ -67,13 +65,18 @@ LimitNOFILE=1024
 
 [Install]
 WantedBy=multi-user.target
-
-Reload and start the service:
-
+```
+Reload and start the service with the following commands:
+```bash
 sudo systemctl daemon-reload
 sudo systemctl start bitcoind.service
+```
 
-Now Bitcoin Core runs automagically!
+Now Bitcoin Core runs automatically! Check that it is running with the following command:
+```bash
+bitcoin-cli -regtest getblockchaininfo
+```
+If you see the blockchain information, you're all set!
 
 ## Step 2: Install Sparrow Wallet
 
