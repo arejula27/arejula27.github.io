@@ -1,6 +1,6 @@
 baseURL: https://arejula27.github.io
 languageCode: en-us
-title: Íñigo Aréjula Aísa
+title: arejula27
 theme: ["PaperMod"]
 enableEmoji: true
 taxonomies:
@@ -29,14 +29,12 @@ params:
   ShowRssButtonInSectionTermList: true
   ShowShareButtons: false
   homeInfoParams:
-    Title: Hi there! I'm Íñigo Aréjula Aísa.
-    Content: Software engineer and FOSS enthusiast. I write about software development, learning and other things.
+    Title: Hi there! arejula27
+    Content: todo 
 
   socialIcons: # optional
     - name: "github"
       url: "https://github.com/arejula27/"
-    - name: "linkedin"
-      url: "https://linkedin.com/in/íñigo-arejula"
     - name: "email"
       url: "mailto:arejula27@gmail.com"
 
@@ -61,14 +59,10 @@ languages:
           name: "Etiquetas"
           url: "/etiquetas/"
           weight: 20
-        - identifier: "CV"
-          name: "CV"
-          url: "../cv_inigo_arejula.pdf"
-          weight: 30
     params:
       homeInfoParams:
-        Title: ¡Hola! Soy Íñigo Aréjula Aísa.
-        Content: Ingeniero de software y entusiasta del software libre. Escribo sobre desarrollo de software, aprendizaje y otras cosas.
+        Title: ¡Hola! Soy arejula27
+        Content: todo
 outputs:
   home:
     - HTML
