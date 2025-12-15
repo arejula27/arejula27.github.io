@@ -16,10 +16,6 @@ menu:
       name: "Tags"
       url: "/tags/"
       weight: 20
-    - identifier: "Resume"
-      name: "Resume"
-      url: "/cv_inigo_arejula.pdf"
-      weight: 30
 
 params:
   ShowReadingTime: true

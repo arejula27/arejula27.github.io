@@ -1,0 +1,7 @@
+.callout.warning {
+  border-left: 4px solid #f0ad4e;
+  background: rgba(240, 173, 78, 0.1);
+  padding: 1em;
+  margin: 1.5em 0;
+}
+
