@@ -1,16 +1,17 @@
 baseURL: https://arejula27.github.io
-languageCode: en-us
+languageCode: es-ES
+defaultContentLanguage: es
 title: arejula27
 theme: ["PaperMod"]
 enableEmoji: true
 taxonomies:
-  category: "Categories"
+  category: "Categorías"
   tag: "Tags"
 menu:
   main:
-    - identifier: "Archives"
-      name: "Archives"
-      url: "/archives/"
+    - identifier: "Archivos"
+      name: "Archivos"
+      url: "/archivos/"
       weight: 10
     - identifier: "Tags"
       name: "Tags"
@@ -25,8 +26,8 @@ params:
   ShowRssButtonInSectionTermList: true
   ShowShareButtons: false
   homeInfoParams:
-    Title: Hi there! arejula27
-    Content: todo 
+    Title: Diario de un desarrollador de Bitcoin Core
+    Content: "Un registro personal de mi camino como desarrollador de Bitcoin Core: código, revisiones, propuestas, aprendizajes técnicos y reflexiones sobre el desarrollo Bitcoin."
 
   socialIcons: # optional
     - name: "github"
@@ -35,30 +36,30 @@ params:
       url: "mailto:arejula27@gmail.com"
 
 languages:
-  en:
-    languageName: ":uk:"
+  es:
+    languageName: ":es:"
     weight: 1
     taxonomies:
       tag: tags
-  es:
-    languageName: ":es:"
+  en:
+    languageName: ":en:"
     weight: 2
     taxonomies:
-      tag: etiquetas
+      tag: tags
     menu:
       main:
-        - identifier: "Archivos"
-          name: "Archivos"
-          url: "/es/archives/"
+        - identifier: "Archives"
+          name: "Archives"
+          url: "/en/archives/"
           weight: 10
-        - identifier: "Etiquetas"
-          name: "Etiquetas"
-          url: "/etiquetas/"
+        - identifier: "Tags"
+          name: "Tags"
+          url: "/en/tags/"
           weight: 20
     params:
       homeInfoParams:
-        Title: ¡Hola! Soy arejula27
-        Content: todo
+        Title: Diary of a Bitcoin Core Developer
+        Content: "A personal record of my journey as a Bitcoin Core developer: code, reviews, proposals, technical learnings, and reflections on Bitcoin development."
 outputs:
   home:
     - HTML

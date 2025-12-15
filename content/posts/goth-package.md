@@ -1,30 +1,30 @@
 +++
-title = 'Authenticating in Golang  servers with Goth package'
-date = 2024-05-24T02:45:08+01:00
+title = 'Autenticación en servidores Golang con el paquete Goth'
+date = 2024-12-02T02:45:08+01:00
 draft = false
-description= "Learn how to authenticate users in web applications using the Goth package and Echo framework in Golang. This package  provides a simple API for authentication in many providers, including Google, GitHub, and Facebook."
+description= "Aprende a autenticar usuarios en aplicaciones web usando el paquete Goth y el framework Echo en Golang. Este paquete proporciona una API simple para autenticar en muchos proveedores, incluyendo Google, GitHub y Facebook."
 ShowToc= true
-tags= ["golang", "web", "authentication", "goth", "echo"]
+etiquetas= ["golang", "web", "autenticación", "goth", "echo"]
 +++
 
-One of the most common tasks in web development is user authentication. You need a way to verify that the user is who they say so you can allow them to access their data.
+Una de las tareas más comunes en el desarrollo web es la autenticación de usuarios. Necesitas una manera de verificar que el usuario es quien dice ser para permitirle acceder a sus datos.
 
-Nowadays, there are many ways to authenticate users. Some developers implement their own authentication system, however I tried to explore how to use a third-party service to authenticate users with their Google, Facebook, or GitHub accounts.
+Hoy en día, hay muchas maneras de autenticar usuarios. Algunos desarrolladores implementan su propio sistema de autenticación, sin embargo, exploré cómo usar un servicio de terceros para autenticar usuarios con sus cuentas de Google, Facebook o GitHub.
 
-In the JavaScript ecosystem I used [Passport.js](https://www.passportjs.org/), this library provides a common interface for authenticating users in many providers. In the Go ecosystem, I found the [Goth](https://github.com/markbates/goth) package.
+En el ecosistema de JavaScript usé [Passport.js](https://www.passportjs.org/) en algunos proyectos, esta biblioteca proporciona una interfaz común para autenticar usuarios en muchos proveedores. En el ecosistema de Go, encontré el paquete [Goth](https://github.com/markbates/goth).
 
+En este artículo explicaré con ejemplos de código cómo implementar un sistema de autenticación y autorización para un servidor [Echo](https://echo.labstack.com/). En caso de que prefieras usar la biblioteca estándar, consulta este [ejemplo](https://github.com/markbates/goth/blob/master/examples/main.go) y para `chi` mira este [video](https://www.youtube.com/watch?v=iHFQyd__2A0&t=505s).
 
-In this article I will explain with code examples how to implement an authentication and authorization system for a  [Echo](https://echo.labstack.com/) server. In case you prefer to use the standard library see this [example](https://github.com/markbates/goth/blob/master/examples/main.go) and for `chi` watch this [video](https://www.youtube.com/watch?v=iHFQyd__2A0&t=505s).
+En este artículo se da por supuesto que tienes conocimientos básicos de Go y Echo y que ya tienes un modulo inicializado.
 
-I will supose that you have a basic knowledge of Go and Echo and you have a project already set up.
-
-## Installation
-The first step is to install the package using the `go get` command.
+## Instalación
+El primer paso es instalar el paquete usando el comando `go get`.
 ```bash
 go get github.com/markbates/goth
 ```
-## Usage
-The `goth` package works using the [gorilla/sessions](https://github.com/gorilla/sessions) package, so it is required to configure the `Store` before using it.
+
+## Uso
+El paquete `goth` funciona usando el paquete [gorilla/sessions](https://github.com/gorilla/sessions), por lo que es necesario configurar el `Store` antes de usarlo. Esto configura la forma en que se alamacenan las sesiones en la aplicación, en este caso únicamente guardaremos las cookies en memoria.
 
 ```go
 store := sessions.NewCookieStore([]byte(key))
@@ -35,8 +35,8 @@ store.Options.Secure = IsProd
 
 gothic.Store = store
 ```
-Then all wanted providers must be configured, see the [supported providers](https://github.com/markbates/goth#supported-providers) for more information.
-Each provider has its own configuration, but all of them expose the same interface. In the following example, we configure the Google provider, it requires a `ClientID`, `ClientSecret`, and a `CallbackURL`. The first two are provided by Google in the [Google Developer Console](https://console.developers.google.com/), and the last one is the URL where the user will be redirected after the authentication process (we will set it up later).
+
+Después, se deben configurar todos los proveedores deseados. Consulta los [proveedores compatibles](https://github.com/markbates/goth#supported-providers) para más información. Cada proveedor tiene su propia configuración, pero todos exponen la misma interfaz. En el siguiente ejemplo, configuramos el proveedor de Google, el cual requiere un `ClientID`, `ClientSecret` y un `CallbackURL`. Los dos primeros son proporcionados por Google en la [Google Developer Console](https://console.developers.google.com/), y el último es la URL donde el usuario será redirigido después del proceso de autenticación (lo configuraremos más adelante).
 
 ```go
 googleClientID := os.Getenv("GOOGLE_CLIENT_ID")
@@ -44,16 +44,16 @@ googleClientSecret := os.Getenv("GOOGLE_CLIENT_SECRET")
 goth.UseProviders(google.New(googleClientID, googleClientSecret, "http://localhost:3000/auth/google/callback"))
 ```
 
-This packages requires a few routes to be set up, `login`, `callback` and `logout`. 
+Este paquete requiere configurar algunas rutas: `login`, `callback` y `logout`. 
 ```go
 e.GET("/auth/:provider/callback", googleCallback)
 e.GET("/logout/:provider", logout)
 e.GET("/login/:provider", auth)
 ```
 
-The `:provider` parameter is required because `goth` supports multiple providers, so it needs to know which one to use and it detect it by the URL.
+El parámetro `:provider` es necesario porque `goth` soporta múltiples proveedores, por lo que necesita saber cuál usar y lo detecta a través de la URL, es decir, si la URL es `/auth/google/callback`, usará el proveedor de Google.
 
-The `googleCallback` will be called after google authenticates the user and will receive the user data
+El `googleCallback` será llamado después de que Google autentique al usuario y recibirá los datos del usuario.
 ```go
 func googleCallback(c echo.Context) error {
 	user, err := gothic.CompleteUserAuth(c.Response(), c.Request())
@@ -61,7 +61,7 @@ func googleCallback(c echo.Context) error {
 		log.Println(err)
 		return c.String(http.StatusInternalServerError, "Error")
 	}
-	//save the user to the session
+	//guardar el usuario en la sesión
 	userJSON, err := json.Marshal(user)
 	if err != nil {
 		return err
@@ -73,16 +73,17 @@ func googleCallback(c echo.Context) error {
 	return c.Redirect(http.StatusTemporaryRedirect, "/user")
 }
 ```
-As `goth` do not save any data in the session we also add some data to it so we can used later in our app. It is done by the `gothic.StoreInSession` function. In this case the whole user is stored but it will be better to save only the gmail.
 
-At the end the function will redirect to a restricted route.
+Como `goth` no guarda ningún dato en la sesión, también añadimos algunos datos para que puedan ser usados más tarde en nuestra aplicación. Esto se hace mediante la función `gothic.StoreInSession`. En este caso, se guarda el usuario completo, pero sería mejor guardar solo el correo electrónico.
 
-The `auth` function is responsible for login the user in the application. It must be called from a button in the HTML code.
+Al final, la función redirigirá a una ruta restringida.
+
+La función `auth` es responsable de iniciar sesión en la aplicación. Debe ser llamada desde un botón en el código HTML.
 ```go
 func auth(c echo.Context) error {
 
 	_, err := gothic.GetFromSession("user", c.Request())
-	//if the user is already logged in, redirect to the user page
+	//si el usuario ya está logueado, redirigir a la página de usuario
 	if err == nil {
 		return c.Redirect(http.StatusTemporaryRedirect, "/user")
 	}
@@ -94,11 +95,12 @@ func auth(c echo.Context) error {
 	return nil
 }
 ```
-As the user is saved in the session first we check if the user is already logged, in that case it will be redirect. In the other hand we will use the `gothic.BeginAuthHandler` function for request the credentials to teh user via the provider specified.
 
-As we are using echo framework it is required to save the provider in the context, however if we are using the standard library this is not needed.
+Dado que el usuario se guarda en la sesión, primero verificamos si ya está logueado. En ese caso, será redirigido. De lo contrario, usaremos la función `gothic.BeginAuthHandler` para solicitar las credenciales al usuario a través del proveedor especificado.
 
-Finally we have to add a endpoint to logout.
+Como estamos usando el framework Echo, es necesario guardar el proveedor en el contexto. Sin embargo, si usamos la biblioteca estándar, esto no sería necesario.
+
+Finalmente, debemos añadir un endpoint para cerrar sesión.
 ```go
 func logout(c echo.Context) error {
 	provider := c.Param("provider")
@@ -109,33 +111,32 @@ func logout(c echo.Context) error {
 }
 ```
 
-## Authorization middleware
-This package help us to login using a third party and create the session for the user. However, it does not provide a middleware for checking if the user is logged in or not. For that we must implement a small middleware that will be executed before our HTTP handler.
+## Middleware de autorización
+Este paquete nos ayuda a iniciar sesión usando un tercero y crear la sesión para el usuario. Sin embargo, no proporciona un middleware para verificar si el usuario ha iniciado sesión o no. Para ello, debemos implementar un pequeño middleware que se ejecute antes de nuestro handler HTTP.
 ```go
 func AuthorizationMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 
-		//check the session is valid
+		//verificar si la sesión es válida
 		userJSON, err := gothic.GetFromSession("user", c.Request())
 		if err != nil {
-			return c.JSON(401, map[string]string{"message": "Unauthorized"})
+			return c.JSON(401, map[string]string{"message": "No autorizado"})
 		}
 		var user goth.User
 		err = json.Unmarshal([]byte(userJSON), &user)
 
 		if err != nil {
-			return c.JSON(401, map[string]string{"message": "Unauthorized"})
+			return c.JSON(401, map[string]string{"message": "No autorizado"})
 		}
 		c.Set("user", user)
 		return next(c)
 	}
-
 }
 ```
-This function receives a `echo.HandlerFunc` and returns the same so it can be used as middleware in `Echo`. It will retrieve the user from the session. If everything works fine the user is logged and the middleware would continue to the handler. In case soemthing wrong happens the application would return an error `401 Unauthorized` .
 
-At the end of the function the data retrieve from the session will b stored in the request context so it can be used in the handler.
+Esta función recibe un `echo.HandlerFunc` y devuelve el mismo para que pueda ser usado como middleware en `Echo`. Recuperará al usuario de la sesión. Si todo funciona correctamente, el usuario está logueado y el middleware continuará al handler. En caso de que algo salga mal, la aplicación devolverá un error `401 Unauthorized`.
 
-## Conclusion
-This package is a great way to authenticate users in web applications. It provides a simple API for authentication in many providers, including Google, GitHub, and Facebook. It is easy to use and configure, and it works well with the Echo framework.  You can find the complete code in this [repository](https://github.com/arejula27/go-lab/tree/main/auth).
+Al final de la función, los datos recuperados de la sesión se almacenarán en el contexto de la solicitud para que puedan ser usados en el handler.
 
+## Conclusión
+Este paquete es una excelente manera de autenticar usuarios en aplicaciones web. Proporciona una API simple para autenticación en muchos proveedores, incluyendo Google, GitHub y Facebook. Es fácil de usar y configurar, y funciona bien con el framework Echo. Puedes encontrar el código completo en este [repositorio](https://github.com/arejula27/go-lab/tree/main/auth).

@@ -2,6 +2,7 @@
 title = 'Como depurar Bitcoin core'
 date = 2025-12-12T21:21:58+01:00
 draft = true
+ShowToc= true
 tags = ["bitcoin", "core", "depuración", "test"] 
 +++
 
