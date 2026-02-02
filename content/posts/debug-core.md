@@ -1,53 +1,65 @@
 +++
-title = 'Como depurar Bitcoin core'
-date = 2025-12-12T21:21:58+01:00
-draft = true
-ShowToc= true
-tags = ["bitcoin", "core", "depuración", "test"] 
+title = 'Cómo depurar Bitcoin Core'
+date = 2026-01-17T00:44:31+01:00
+draft = false
+tags = ['bitcoin', 'crypto', 'blockchain', 'btc', 'addresses']
 +++
+# How to debug Core
 
-Cuando empiezas a colaborar en core lo una de las primeras tareas que te enfrentas es pull request review, a veces con un simple análisis estático sirve, pero otras se requiere un análisis mas profundo, en el cual depurar es fundamental, hay veces que con unos pocos logs sirve para ver como evoluciona la ejecución, pero otras es necesario depurar el código. Muchas veces los programadores evitamos depurar el código por pereza, por que no sabemos como configurar el depurador o por que nunca nos han enseñado a usarlo. Este articulo tratará de ayudar a aquellos contribuidores a core que necesitan usar el depurador pero no saben por donde empezar. 
+Cuando alguien comienza a colaborar en Bitcoin Core, una de las primeras tareas a las que se enfrenta es la revisión de *pull request*. En muchos casos, un análisis estático del código es suficiente. Pero en otras ocasiones, es necesario realizar un análisis más profundo, donde la depuración se vuelve una herramienta fundamental. 
 
-Este articulo esta inspirado en la [guía de depuración escrita por fjarh ](https://github.com/fjahr/debugging_bitcoin), por lo que ciertas secciones serán muy similares, he considero necesario hacer la mia propia por dos razones principalemnte: la guía original esta en inglés, a pesar de que para contribuir en core es altamente recomendable hablarlo y escribirlo con fluidez, quizás haya desarrolladores de la habla hispana que lo vean como una barrera, y con este articulo trato de reducir la barrera. La otra razón es que bitcoin core [cambio el  sistema de compilación de *autotools* a cmake](https://github.com/bitcoin/bitcoin/pull/30454), dejando obsoleta la guía original.
+Durante la depuración, es habitual añadir logs para observar cómo evoluciona la ejecución del programa. No obstante, hay situaciones en las que este enfoque es insuficiente, y es necesaria una depuración más precisa mediante el uso de *breakpoints* y de un depurador interactivo. 
 
-Para esta guía utilizaremos `gdb` como depurador, dado que en mi ordenador Linux es el que tengo disponible, si tienes Windows te recomendaría familizarte con WSL2, para poder tener mi mismo flujo de trabajo, en el caso de Mac necesotaras usar `lldb` , ambos son muy similares como se indica  fjahr.
+Este artículo está inspirado en la [Guía de Depuración escrita por fjarh ](https://github.com/fjahr/debugging_bitcoin), por lo que algunas secciones pueden resultar similares. Aún así, he considerado necesario elaborar esta guía por dos motivos principales: 
+1. La guía original está en inglés. Aunque para contribuir a Bitcoin Core es altamente recomendable tener un buen dominio de este idioma, esto puede suponer una barrera inicial para desarrolladores de habla hispana. Este artículo pretende ayudar a reducir dicha barrera.  
+2. Bitcoin Core [ha migrado su sistema de compilación de *autotools* a CMake](https://github.com/bitcoin/bitcoin/pull/30454), lo que deja obsoleta parte de la información contenida en la guía original. 
 
-Antes de empezar de ten en cuenta dos pequeños detalles:
-- Bitcoin core nos permite correr un nodo en distintas redes (mainnet, tesnet or regtest), cada una tiene su propia configuración y archivos donde guardan sus logs, a la hora de depurar debes asegurarte que estas leyendo el archivo correcto para no volverte loco.
-- Los test suleen borrar los logs si no fallan, para evitarlo puedes usar el flag `--no-cleanup`
+Para esta guía se utilizará `gdb` como depurador, ya que es el que tengo disponible en mi entorno Linux. Si utilizas Windows, te recomendaría familiarizarte con `WSL2` para poder seguir un flujo de trabajo similar. En macOS, deberás usar `lldb`, que es conceptualmente muy parecido a `gdb`, tal y como indica fjahr en su documentación. 
+
+Antes de comenzar, conviene tener en cuenta dos detalles importantes: 
+
+- Bitcoin Core permite ejecutar nodos en distintas redes (mainnet, testnet o regtest). Cada una tiene su propia configuración y archivos de registro (logs). A la hora de depurar, es fundamental asegurarse de que se están consultado los archivos correctos para evitar confusiones. 
+- Los test suelen eliminar los archivos de log cuando finalizan correctamente. Si deseas conservarlos para su análisis, puedes utilizar el flag `--no-cleanup`.
+
 ## Compilar el código
-El primer paso a la hora de depurar nuestro código es compilarlo, no voy a entrar en detalle sobre como hacerlo desde 0 pues la guía se extendería mucho,  este paso se podría resumir en los siguientes pasos:
-1. Clonar el repositorio de [github](https://github.com/bitcoin/bitcoin)
-2. Instalar las dependecias, en la propia [documentación](https://github.com/bitcoin/bitcoin/blob/master/doc/build-unix.md#linux-distribution-specific-instructions) del repositorio tienes las intrucciones, a pesar de estar en inglés es fácil de seguir, únicamente es ir copiando los comandos en el terminal para instalar todas las herramientas necesarias.
-3. Configurar el proceso de compilación, para ello basta con ejecutar este comando
+El primer paso para depurar el código es compilarlo correctamente. Para ello, debemos seguir los siguientes pasos: 
+1. Clonar el repositorio oficial desde [GitHub](https://github.com/bitcoin/bitcoin).
+2. Instalar las dependencias necesarias. En la [documentación oficial](https://github.com/bitcoin/bitcoin/blob/master/doc/build-unix.md#linux-distribution-specific-instructions) encontraremos instrucciones detalladas para cada distribución Linux. Aunque la documentación está en inglés, es fácil de seguir: básicamente consiste en ejecutar una serie de comandos para instalar las herramientas requeridas. 
+3. Configurar el proceso de compilación ejecutando el siguiente comando: 
 	```bash
 	cmake -DCMAKE_BUILD_TYPE=Debug -B build 
 	```
-	En el indicamos a `cmake` dos cosas, que quieres compilar en modo depuración (`-DCMAKE_BUILD_TYPE=Debug`) y que compile todo en el dorectorio `build`, este ultimo puedes poner el valor que prefieras, por el moemnto recomiendo que uses este.	
-4. Compilar y construir el binario, para ello usaremos el siguiente comando
+	Con este comando indicamos a `cmake` dos cosas: 
+    - Que queremos compilar en modo depuración (`-DCMAKE_BUILD_TYPE=Debug`), lo que incluirá símbolos de depuración en los binarios. 
+    - Que todo el proceso de compilación se realice en el directorio `build`. Podemos elegir otro nombre si lo deseamos, pero se recomienda usar éste para mantener la convención. 
+4. Compilar y generar los binarios con el siguiente comando: 
 	```bash
 	cmake --build build -j "$(($(nproc)/2+1))"
 	```
-	Este comando creará los binarios usando la configuración de la carpeta `build`. Además hemos hecho una pequeña optimización a la hora de compilar, de normal bitcon core tarda mucho en compilar, para acelarar el proceso podemos utilizar varios nucleos de nuestra CPU a la vez, para ello escribimos `-j "$(($(nproc)/2+1))"`, en este caso obtenemos el numero de núcleos de nuestra cpu con el comando  `nproc`, utilizar todos suele dar problemas así que hacemos una pequeña operación matematca para utilzar la mitad mas 1 (si tenemos 24 nucleos suaremos 13), esto puedes modificarlo al gusto, cuanto más alto sea el número mas rapido irá, pero tambien hay más posibilidades de que falle la compilación.
+	Este comando construye los binarios utilizando la configuración definida en el directorio `build`. Además, se aprovecha de la compilación en paralelo para acelerar el proceso. 
 
-Tras estos pasos deberías tener ya todos tus binarios listos, para comprbarlo puedes ejecutar `ls` en la carpeta donde estan todos los ejecutables, deberías obtener algo similar a esto: 
+    Bitcoin Core puede tardar bastante en compilar, por lo que es recomendable usar varios núcleos de la CPU. El comando `nproc` devuelve el número total de núcleos disponibles, y la expresión `-j "$(($(nproc)/2+1))"` utiliza aproximadamente la mitad más uno: por ejemplo, en una CPU de 24 núcleos, se usarían 13. 
+
+    Podemos ajustar este valor según nuestro sistema: cuantos más núcleos utilicemos, más rápida será la compilación, aunque también aumentará la probabilidad de errores o de un uso excesivo de recursos.
+
+Tras completar estos pasos, deberíamos tener todos los binarios generados. Para comprobarlo, podemos ejecutar el siguiente comando: `ls build/bin`. Deberíamos obtener una salida similar a ésta: 
 ```bash
 $ ls build/bin        
 bitcoin  bitcoin-cli  bitcoin-node  bitcoin-tx  bitcoin-util  bitcoin-wallet  bitcoind  test_bitcoin
 ```
+Es importante tener en cuenta que C++ es un lenguaje compilado, no interpretado. Esto significa que cada vez que realicemos un cambio en el código fuente, deberemos recompilar el proyecto (repitiendo el paso 4) para que los cambios se reflejen en los binarios, aunque no se indique explícitamente más adelante. 
 
-Es muy importante tener en cuenta como ejecutar, c++ es un lenguaje compilado y no interpretado, por lo que significa que por cada cambio que hagas en el código debes recompilar todo el proyecto (repetir paso 4) aunque no lo indique explicitamente.
 
 ## Nuestro primer log
-En esta guía ejecutaremos nuestro nodo en `regtest`, esto es por que nos permite tener una red local que controlamos nosotros totalmente.  Primero vamos a tratar de lanzar el nodo en dicha red, para ello utilzaremos el siguiente comando:
+En esta guía ejecutaremos nuestro nodo en `regtest`, ya que esta red nos permite disponer de un entorno local completamente bajo nuestro control. Comenzaremos lanzando el nodo en dicha red con el siguiente comando: 
 ```bash
 ./build/bin/bitcoind -regtest   
 ``` 
-Esto debería mostrar un monton de logs que por el momento nos serán irrelevantes, para tratar de comunicarnos con nuestro nodo y ver que todo va bien ejecuta:
+Al ejecutarlo, se mostrarán numerosos mensajes de log que, por el momento, no son relevantes. Para comprobar que el nodo está funcionando correctamente y que podemos comunicarnos con él, ejecutamos el siguiente comando en otro terminal: 
 ```
 ./build/bin/bitcoin-cli --regtest getblockchaininfo  
 ```
-Esto nos deberia mostrar un JSON con información de nuestra red
+Esto debería devolver un objeto JSON con información sobre el estado de la red: 
 ```JSON
 {
   "chain": "regtest",
@@ -69,10 +81,12 @@ Esto nos deberia mostrar un JSON con información de nuestra red
   ]
 }
 ```
- si es la primera vez que la usamos en el campo *blocks* debería indicar un 0, sino el numero correspondiente de bloques.
-En este comando lo que hemos hecho es realizar una llamada rpc a nuestro nodo. Ahora vamos a tratar de añadir nuestro primer log propio para aprender como añadirlos y poder seguir la ejecución.
+Si es la primera vez que utilizamos esta red, el campo *blocks* deberá indicar 0; en caso contrario, el valor será mayor. 
 
-Para ello abre el archivo `src/rpc/blockchain.cpp`, en el busca la función `getblockchaininfo` (en torno a la linea 1335), esta es la función que se ejecuta cuando hemos hecho la llamada rpc antes. En ella podemos poner nuestro log en la primera linea de la función de tal forma que quede algo así:
+En este punto hemos realizado una llamada RPC a nuestro nodo. A continuación, añadiremos nuestro primer log personalizado para aprender cómo instrumentar el código y seguir la ejecución de forma más detallada. 
+
+Para ello, abrimos el archivo `src/rpc/blockchain.cpp` y localizamos la función `getblockchaininfo` (en torno a la línea 1335). Ésta es la función que se ejecuta cuando realizamos la llamada RPC anterior. Añadiremos nuestro log al inicio de la función, de manera que el código quede así: 
+
 ```c++
 // used by rest.cpp:rest_chaininfo, so cannot be static
 RPCHelpMan getblockchaininfo()
@@ -83,82 +97,87 @@ RPCHelpMan getblockchaininfo()
     return RPCHelpMan{"getblockchaininfo",...
 ```
 
-Tras esto deberemos volver a compilar y ejecutar (notar como hemos añadido el flag `-debug=rpc` para que se imprima nuestro log):
+Tras realizar este cambio, debemos recompilar y volver a ejecutar el nodo. En esta ocasión, añadimos el flag `-debug=rpc` para que se muestre nuestro mensaje de log:
 ```bash
 cmake --build build -j "$(($(nproc)/2+1))"  
 ./build/bin/bitcoind -regtest -debug=rpc
 ```
-Y llamar de nuevo a `getblockchaininfo`, tras esto podemos ver nuestro log en el terminal. A veces el nodo continua imprimiendo mensajes y perdemos la traza de nuestro log, para ello podemos ir a verlo en el archivo `~/.bitcoin/regtest/debug.log`. Si quieres verificar que se encuentra ahí nuestro mensaje ejecuta:
+Una vez iniciado el nodo, volvemos a invocar `getblockchaininfo`. Deberíamos ver el mensaje de log en el terminal. En ocasiones, el nodo continúa imprimiendo mensajes, por lo que resulta fácil perder la traza de nuestro log. Si deseamos continuar una versión persistente de los registros, podemos acceder al archivo  `~/.bitcoin/regtest/debug.log`. Para verificar que nuestro mensaje se encuentra ahí, ejecutamos: 
 ```bash
 $ cat ~/.bitcoin/regtest/debug.log| grep "MI PRIMER LOG"
 2025-12-12T23:22:31Z [rpc] MI PRIMER LOG
 ```
 
-Recalcar que el sistema de logs de core ha mejorado bastante en las ultimas versiones, ahora nos deja tener distintas categorías para poder agrupar nuestros logs, por eso  he escrito `BCLog::RPC` como primer argumento de la función `LogDebug`, al ser para nuestro proceso de depuración puedes indicar ahí la categoría que prefieras, únicamente recuerda poner la misma categoría al iniciar `bitcoind` udando el flag `-debug`.
+Cabe destacar que el sistema de logging de Bitcoin Core ha mejorado notablemente en las últimas versiones. Actualmente permite clasificar los mensajes por categorías, lo que facilita enormemente el análisis. Por ese motivo hemos utilizado  `BCLog::RPC` como primer argumento de la función `LogDebug`. Durante el proceso de depuración podemos usar la categoría que prefiramos; solo tenemos que acordarnos de habilitarla al iniciar `bitcoind` en el flag `-debug`.
 
-## Nuestro primer breakpoint
+## Nuestro primer *breakpoint*
 
-Ya hemos aprendido a poner logs en nodos bitcoin, esto suele ser suficiente bastantes veces, pero otras hace falta una depuración más seria, para ello utilizaremos `gdb`. Para que funcione correctamente es fundamental que la compilación no haya hecho optimizaciones, por lo que asegúrate de haber compilado con el flag `-DCMAKE_BUILD_TYPE=Debug`:
+Ya hemos aprendido a añadir logs en Bitcoin Core, lo cual en muchos casos es suficiente. Sin embargo, hay situaciones en las que se requiere una depuración más precisa. Para ello, utilizaremos `gdb`. 
+
+Para que la depuración funcione correctamente, es fundamental que el código se haya compilado sin optimizaciones. Tenemos que asegurarnos de haber utilizado el flag `-DCMAKE_BUILD_TYPE=Debug`:
 ```
 cmake -B build -DCMAKE_BUILD_TYPE=Debug
 cmake --build build -j "$(($(nproc)/2+1))"   
 ``` 
-Para empezar la ejecución de nuestro depurador debemos escribir:
+Para iniciar el depurador, ejecutamos: 
 ```bash
-gdb  --args ./build/bin/bitcoind -regtest  
+gdb ./build/bin/bitcoind   
 ```
+Esto abrirá una sesión interactiva de depuración. En esta guía no entraremos en un uso exhaustivo de `gdb`; nos limitaremos a cubrir los conceptos básicos necesarios. 
 
-
-De esta forma nos abrirá un terminal interactivo de depuración. En esta guía no explicaré a fondo como usar `gdb` , solo dare unas pequeñas indicaciones para que puedas empezar.
-Lo primero que debemos hacer antes de comenzar la ejecución es poner un *breakpoint*, esto significa un punto donde el depurador se parará para darnos información. Para nuestro ejemplo lo pondremos en la misma función que hemos modificado antes, en este caso la función se limita a devolver `RPCHelpMan`, por lo que utilzarémos el siguiente comando para poner un breakpoint
+Antes de iniciar la ejecución del programa, debemos establecer un *breakpoint*, es decir, un punto en el que el programa se detendrá para permitirnos inspeccionar su estado. En este ejemplo, lo colocaremos en la misma ruta de ejecución que antes. Dado que la función `getblockchaininfo`devuelve un objeto `RPCHelpMan`, utilizaremos el siguiente comando, con una salida similar a: 
 ```gdb
 $ break RPCHelpMan::HandleRequest
 
 Breakpoint 1 at 0x3aa2f5: file ./rpc/blockchain.cpp, line 1337.
 ```
 
-Tras esto ya podemos iniciar la ejecución escribiendo `run` en el terminal. A continuzación debemos invocar la llamada `getblockchaininfo`de nuevo, mostrando el depurador algo asi:
+Una vez definido el *breakpoint*, iniciamos la ejecución del programa:
+```
+run --regtest
+```
+A continuación, desde otro terminal, invocamos la llamada RPC `getblockchaininfo`. El depurador se detendrá y mostrará una salida similar a ésta: 
 ```
 Thread 4 "b-httpworker.0" hit Breakpoint 1, RPCHelpMan::HandleRequest (
     this=0x7fffe3ffd300, request=...) at ./rpc/util.cpp:636
 ```
-Podemos inspeccionar la función el código fuente, vemos que toda la info esta en la variable `request` trataremos de mostrar el método invocado desde el depurador usando:
+En este punto, podremos inspecionar el estado del programa. Observando el código fuente, veremos que la información relevante se encuentra en la variable `request`. Para mostrar el método RPC invocado, ejecutamos: 
 ```bash
 $ print request.strMethod
 ```
-lo que nos debe devolver el siguiente texto: `	2 = "getblockchaininfo"`. De esta forma hemos conseguido satisfactoriamente, ejecutar, detener el flujo e inspeccionar variables de nuestro código.
+La salida debería ser:`	2 = "getblockchaininfo"`. 
+
+De este modo, hemos logrado ejecutar el programa, detener su flujo de ejecución e inspeccionar variables internas en tiempo de ejecución.
 
 ## ¿Cuándo se obtiene el número de bloques?
-Ahora te propongo un pequeño ejercicio, muestra por pantalla utilizando la función `print` de `gdb` la altura de la blockchain en la función `getblockchaininfo()` del archivo `src/rpc/blockchain.cpp`.  Trata de hacerlo por tu cuenta y luego lee la solución.
+A continuación propongo un pequeño ejercicio: utilizando el comando `print`de `gdb`, muestra por pantalla la altura de la blockchain dentro de la función `getblockchaininfo()` del archivo `src/rpc/blockchain.cpp`.  Intenta resolverlo por tu cuenta antes de consultar la solución.
 
 ### Solución
-Si has entendido el proceso de depuración habrás hecho los siguientes pasos:
-1. Has abierto el archivo `src/rpc/blockchain.cpp` y buscado la función `getblockchaininfo` (en torno a la linea 1335).
-2. Has visto que se inicializa una variable llamada `heigh` en la linea 1383
-3. Has inicado el depurador
-4. Has puesto un breakpoint en la linea siguiente a donde se asigna el valor a la variable: `break src/rpc/blockchain.cpp:1384`
-5. Has ejecutado el programa con `run`
-6. Desde otro terminal has llamado a la función usando el cliente rpc `./build/bin/bitcoin-cli --regtest getblockchaininfo  .
-7. Has visto como el depurador llega al breakpoint e impreso el valor de la variable `print height`
+Si entendiste el proceso de depuración, habrás seguido estos pasos: 
+1. Abrir el archivo `src/rpc/blockchain.cpp` y localizar la función  `getblockchaininfo` (en torno a la línea 1335).
+2. Identificar que se inicializa una variable llamada `height` en la línea 1383.
+3. Iniciar el depurador. 
+4. Establecer un *breakpoint* en la línea inmediatamente posterior a la asignación del valor: `break src/rpc/blockchain.cpp:1384`.
+5. Ejecutar el programa con `run --regtest`.
+6. Desde otro terminal, realizar la llamada RPC: `./build/bin/bitcoin-cli --regtest getblockchaininfo`.
+7. Una vez alcanzado el *breakpoint*, imprimir el valor de la variable: `print height`.
 
+>[!warning]
+>Desde que Bitcoin Core migró su sistema de compilación de *autotools* a CMake, la depuración presenta ciertos problemas (ver [#31204](https://github.com/bitcoin/bitcoin/issues/31204)). Como solución temporal, ejecuta el siguiente comando dentro de `gdb`:
+>```
+>set substitute-path /home/arejula27/workspaces/bitcoin/build/src /home/arejula27/workspaces/bitcoin/src
+>```
+> Sustituye `/home/arejula27/workspaces/bitcoin` por ruta en la que hayas clonado el repositorio de Bitcoin Core en tu sistema. 
 
-{{< warning >}}
-A veces el depurador no encuentra los archivos del codigo , para ello ejecuta 
-```
-set substitute-path /home/arejula27/workspaces/bitcoin/build/src /home/arejula27/workspaces/bitcoin/src
-```
- modificando el path `/home/arejula27/workspaces/bitcoin` por la carpeta donde has clonado bitcoin core en tu ordenador.
-{{</warning >}}
+## Más *breakpoints*
+Vamos a realizar un segundo ejercicio para consolidar los conceptos aprendidos. El objetivo es colocar un *breakpoint* en el archivo `src/init.cpp` que solo se active cuando el flag`-txindex` se utilice al iniciar *bitcoind*.
 
-## Más breakpoints
-
-Vamos a hacer un segundo ejercicio para consolidar los conceptos, trata de poner un *breakpoint* en el archivo `src/init.cpp` que solo funcione si el flag `-txindex` es usado en *bitcoind*.
-
-{{< warning >}}
-El flag se puede activar tanto por CLI al iniciar `bitcoind` como en el archivo de configuración bitcoin, para este ejercicio recomiendo quitarlo del archivo y activarlo/desactivarlo desde CLI.
-{{< /warning >}}
+>[!warning]
+>El flag `-txindex` puede activarse tanto desde la línea de comandos al iniciar `bitcoind` como a través del archivo de configuración de Bitcoin Core. Para este ejercicio, se recomienta eliminarlo del archivo de configuración y activarlo o desactivarlo únicamente desde la CLI. 
 ### Solución
-Si has analizado bien veras que hay una variable args que instancia `ArgsManager`, a través de esta se puede ver que flags son activados. En este caso queremos ver `txindex`, hay varias zonas donde se comprueba si esta activo, como por ejemplo en la linea 1848:
+Si has analizado el código con atención, habrás observado la existencia de una variable `args`que instancia un objeto de tipo `ArgsManager`. A través de esta clase se gestionan y consultan los flags proporcionados al iniciar el nodo. 
+
+En este caso, nos interesaba comprobar si el flag  `txindex` estaba habilitado. Existen varias secciones del código donde se realiza esta comprobación; una de ellas se encuentra alrededor de la línea 1848 del archivo `src/init.cpp`: 
 ```c++
     if (args.GetBoolArg("-txindex", DEFAULT_TXINDEX)) {
         g_txindex = std::make_unique<TxIndex>(interfaces::MakeChain(node), index_cache_sizes.tx_index, false, do_reindex);
@@ -166,20 +185,24 @@ Si has analizado bien veras que hay una variable args que instancia `ArgsManager
     }
 
 ```
-Si pones un *breakpoint* en la linea 1849 (`break init.cpp:1848`) solo se activará si ejecutas 
+Si colocaste un *breakpoint* en esta sección, por ejemplo en la línea 1848: (`break init.cpp:1848`), el breakpoing solo se habría activado cuando ejecutases `bitcoind`con el flag `-txindex` habilitado, por ejemplo: 
 ```bash
 gdb --args ./build/bin/bitcoind -regtest  -txindex
 ``` 
-
+ De este modo, pudiste verificar cómo el flujo de ejecución dependía directamente de la configuración proporcionada al nodo. 
 
 ## Depurar los test unitarios
-En bitcoin core hay distintos tipos de test, test unitarios, de funcionalidad y de *fuzzing*. Los primeros son test escritos en c++ que vereifican el comportamiento de ciertas funciones y todos ellos son agrupados en un binario `test_bitcoin`. Estos test han sido implemnetados usando la libreria **BOOST**, la cual tiene su propio sistema de logging. Para mostrar un ejemplo podemos ejecutar por ejemplo el test `getarg` que comprueba la clase encargada de gestionar la configuración de *bitcoind* (`GetArgs`):
+En Bitcoin Core existen distintos tipos de test: tests unitarios, tests funcionales y tests de fuzzing. En este apartado nos centraremos en los tests unitarios. 
+
+Los tests unitarios están escritos en C++ y verifican el comportamiento de funciones y componentes concretos del sistema. Todos ellos se agrupan en un único binario llamado `test_bitcoin`. Estos tests están implementados utilizando la librería **BOOST**, que dispone de su propio sistema de logging. 
+
+Como ejemplo, podemos ejecutar el test `getarg`, que valida el comportamiento de la clase encargada de gestionar la configuración de *bitcoind* (`GetArgs`):
 ```bash
 build/bin/test_bitcoin --log_level=all --run_test=getarg_tests 
 ```
-Como ves hemos especificado el nivel de log a todo (*all*), pero podemos especificar otros: `test_suite`, `message` , `warning` y `error`.
+En este comando, hemos indicado que se muestre todo el nivel de logging (*all*), aunque también es posible especificar otros niveles más restrictivos, como: `test_suite`, `message` , `warning` y `error`.
 
-Para hacer logging de nuestros propios mensajes debemos usar mensages the boost dentro de los archivos de test y escribir los textos en la salida de error en caso de editar código fuente (no los test sino las funciones a probar):
+Para imprimir mensajes personalizados desde los tests, debemos utilizar las macros de logging proporcionadas por Boost. En cambio, si queremos imprimir mensajes desde el código fuente que está siendo probado (no desde el test en sí), es recomendable escribir directamente en la salida de error estándar. Por ejemplo: 
 ```c++
 //dentro de los test
 BOOST_TEST_MESSAGE("=======MY BOOST LOG=============");
@@ -187,9 +210,9 @@ BOOST_TEST_MESSAGE("=======MY BOOST LOG=============");
 fprintf(stderr, "=======MY BOOST LOG FROM THE CODE====");
 ```
 
-Si queremos ver solo los mensajes que escribimos en los test usar `--log_level=message ` y si queremos solo las salidas de error `--log_level=error `.
+Si deseamos ver únicamente los mensajes definidos en los test, podemos utilizar el nivel de log `--log_level=message `. Si, por el contrario, solo nos interesa la salida de error, utilizamos: `--log_level=error `.
 
-Para comprobar esto prueba a modificar la linea 62 del archivo `src/test/getargs_test.cpp` tal que así:
+Para comprobar el funcionamiento del logging, modificamos la línea 62 del archivo `src/test/getargs_test.cpp` de la siguiente forma: 
 ```c++
 BOOST_AUTO_TEST_CASE(setting_args)
 {
@@ -199,65 +222,79 @@ BOOST_AUTO_TEST_CASE(setting_args)
     BOOST_TEST_MESSAGE("=======MY BOOST LOG=============");
 
 ```
-Compila y ejecuta el test:
+A continuación, recompilamos el proyecto y ejecutamos el test: 
 ```bash
 cmake --build build -j "$(($(nproc)/2+1))" 
 build/bin/test_bitcoin --log_level=message --run_test=getarg_tests
 ```
+Deberíamos ver en la salida el mensaje de log que acabamos de añadir.
 
-También puedes depurar usando *gdb*, pero no repeteriemos al explación ya que en este caso todo funciona igual, compilar sin optimizaciones, iniciar gdb pero esta vez con el binario de los test, poner *breakpoints* y ejecutar.
+También es posible depurar los test unitarios utilizando `gdb`. El procedimiento es exactamente el mismo que el descrito anteriormente: compilar sin optimizaciones, iniciar `gdb` apuntando al binario `test_bitcoin`, establecer los *breakpoints* necesarios y ejecutar el test correspondiente. Dado que el flujo no difiere del ya explicado, no lo repetiremos en detalle. 
 
-## Depurar los test funcionales
-Los test funcionales en bitcoin core son test escritos en python que comprueban comportamientos en el sistema completo (frente a solo una función en los unitarios), para ello crean instancias de distintos nodos y comprueban el funcionamiento de ellos en red (RPC, consenso, mempool, wallet, P2P, etc.). Estos no se pueden depurar de la misma forma con *gdb* dado que no estan en c++.
-Para correr todos ellos podemos ejecutar:
+## Depurar los test funcionales 
+Los tests funcionales en Bitcoin Core están escritos en Python y verifican el comportamiento del sistema completo, a diferencia de los tests unitarios, que se centran en funciones o componentes aislados. Para ello, los tests funcionales crean instancias de varios nodos y validan su interacción a nivel de red, incluyendo aspectos como RPC, consenso, mempool, wallet y compunicación P2P, entre otros. 
+
+Dado que estos tests no están escritos en C++, no pueden depurarse directamente con `gdb` de la misma forma que el código del nodo o los tests unitarios. 
+
+Para ejecutar la suite completa de tests funcionales, podemos utilizar el siguiente comando: 
+
 ```bash
 build/test/functional/test_runner.py --extended
 ```
-Esto tardará mucho tiempo, así que si quieres correr uno o varios en concreto ejecútalo usando su nombre de archivo (puedes poner uno o varios) mediante el script `test_runner.py` :
+Este proceso puede tardar bastante tiempo. Si deseamos ejecutar uno o varios tests concretos, podemos especificarlos por nombre utilizando el script `test_runner.py` :
 ```
 build/test/functional/test_runner.py feature_rbf.py
 
 ```
-Este volcará los logs en el archivo `test_framework.log` dentro de la carpeta del test (se indica en la primera linea al ejecutar el script). Por defecto esta carpeta siempre se borra al acabar si el test no falla,  se puede evitar ejecutando el tets no el flag `--nocleanup`. En mi caso el archivo se escribió en `/tmp/test_runner_₿_🏃_20251214_162745/feature_rbf_0/test_framework.log`
+Durante la ejecución, los logs se esriben en el archivo `test_framework.log`, ubicado dentro del directorio temporal asignado al test. La ruta exacta se muestra en la primera línea de salida al ejecutar el script. 
 
-Si quieres mostrarlo directamente por el terminal de uno solo en concreto puedes correr el test directamente como si fuera un script:
+Por defecto, este directorio se elimina automáticamente cuando el test finaliza correctamente. Si deseasmos conservarlo para su análisis, podemos evitar este comportamiento utilizando el flag `--nocleanup`. En mi caso, el archivo se generó en la siguiente ruta: `/tmp/test_runner_₿_🏃_20251214_162745/feature_rbf_0/test_framework.log`. 
+
+Si deseamos ver los logs directamente en el terminal para un test concreto, podemos ejecutar el archivo del test como si fuera un script independiente: 
 ```bash
 build/test/functional/feature_rbf.py --loglevel=info
 ```
-Para mostrar los logs a distintos niveles ejecuta los test con `--loglevel=info`, puedes añadir tus propios mensajes de la siguiente forma en el código en python:
-```python
+Para ajustar el nivel de detalle del logging, podemos utilizar el flag `--loglevel=info`. Dentro del propio código, podemos añadir mensajes de log personalizados de la siguiente forma: 
+```
 self.log.info("foo")
 self.log.debug("bar")
 ```
 
-También esta la posibilidad de mostrar todos los mensajes obtenidos del las llamadas rpc, ten cuidado a la hora de usarlo por que es muy verboso, para activarlo usar el flag  `--tracerpc`.
+Además, existe la posibilidad de mostrar todos los mensajes generados por las llamadas RPC. Esta opción es muy verbosa, por lo que debe usarse con precaución. Para activarla, utilizamos el flag `--tracerpc`.  
 
-Finalmente explicaremos como depurar con un depurar estos test. Al ser python no podemos lanzar los test desde *gdb*, por lo que los pararemos en python y nos conectaremos al proceso. Lo primero es añadir este texto sobre el test a depurar:
+Finalmente, veremos cómo depurar test funcionales combinando herramientas de Python y C++. 
+
+Dado que los tests están escritos en Python, no podemos iniciarlos directamente desde `gdb`. En su lugar, detendremos la ejecución desde Python y nos conectaremos al proceso del nodo en C++.
+
+Para detener la ejecución del test, añadimos la siguiente línea en el punto donde queramos pausar el flujo: 
 ```python
 import pdb; pdb.set_trace()
 ```
 
-En nuestro caso podemos editar `test/functional/feature_rbf.py` en la linea 28, quedando algo asi:
+En nuestro ejemplo, editamos el archivo `test/functional/feature_rbf.py` en la línea 28, quedando así:
 ```python
 import pdb; pdb.set_trace()
 class ReplaceByFeeTest(BitcoinTestFramework):
 ```
 
-A continuación compilamos sin optimizaciones:
+A continuación, compilamos sin optimizaciones:
 ```
 cmake -B build -DCMAKE_BUILD_TYPE=Debug
 cmake --build build -j "$(($(nproc)/2+1))"   
 ```
 
-Ahora lanzaremos el test (sin usar el lanzador): 
+Ahora ejecutamos el test directamente (sin usar el *test runner*). Si todo está configurado correctamente, veremos una salida similar a la siguiente: 
 ```
 $ ./build/test/functional/feature_rbf.py
 > /home/arejula27/workspaces/bitcoin/build/test/functional/feature_rbf.py(28)<module>()
 -> pdb.set_trace()
 (Pdb)
 ```
+Esto indica que el test está detenido y esperando instrucciones en el depurador de Python (`pdb`). 
 
-Si vemos el output así siginifca que esta a la espera nuestro test. Ahora ponemos un breakpoint en el codigo fuente en c++ que se será llamado, en este caso el test llama a la función rpc `sendrawtransaction`, podemos tratar de obtener el tamaño virtual de las transacciones. Para ello poner un breakpoint en  `b src/rpc/mempool.cpp:96` y darle a continuar tanto en *gdb* como  en *pdb*. Entonces veremos algo como esto
+Mientras el test está detenido, conectamos `gdb` al proceso de `bitcoind` que ha sido lanzado por el test (o lo iniciamos previamente, según el caso), y establecemos un *breakpoint* en el código fuente C++ que será ejecutado. 
+
+En este caso, el test realiza una llamada RPC a `sendrawtransaction`. Supongams que queremos inspeccionar el cálculo del tamaño virtual de la transacción: para ello, colocamos un *breakpoint* en el archivo `b src/rpc/mempool.cpp:96` y le damos a continuar tanto en *gdb* como  en *pdb*. Entonces veremos algo similar a esto: 
 ```
 (gdb) c
 Continuing.
@@ -267,16 +304,16 @@ Thread 7 "b-httpworker.0" hit Breakpoint 1, operator() (__closure=0x7f40077fc320
 96                  CAmount max_raw_tx_fee = max_raw_tx_fee_rate.GetFee(virtual_size);
 
 ```
-Como vemos ya estamos parados en nuestro breakpoint, ahora podemos obtener los valores de la misma forma que lo hacíamos antes.
+En este punto, ya nos encontramos detenidos en el código C++, y podemos inspeccionar las variables como hemos hecho anteriormente: 
 ```
 (gdb) p virtual_size
 $1 = 147
 ```
 
 ## Conclusión
+Bitcoin Core es un proyecto complejo, y localizar el punto exacto donde se produce un fallo puede resultar una tarea muy tediosa. En muchos casos, los propios logs del programa son suficientes; sin embargo, en otras situaciones es necesario realizar un análisis más profundo. 
 
-Bitcoin core es un proyecto complejo y encontrar el punto exacto donde se produce un fallo puede ser tedioso, a veces con los propios logs del programa sirven, pero otras una búsqueda más exhaustiva es necesario. En esta guía hemos aprendido como podemos poner nuestros propios logs tanto en el nodo como en los test. Hay veces que solo con logs no es suficiente sino que necesitas investigar linea por linea, para eso utilizaremos el depurador.
-
+En esta guía hemos aprendido a añadir nuestros propios logs tanto en el nodo como en los tests, así como a utilizar herramientas de depuración para inspeccionar la ejecución paso a paso. Cuando los logs no son suficientes y se requiere analizar el comportamiento línea por línea, el uso de un depurador se convierte en una herramienta imprescindible. 
 
 ## Sources
 - [fjahr/bitcoin_debugging.md](https://gist.github.com/fjahr/2cd23ad743a2ddfd4eed957274beca0f)
