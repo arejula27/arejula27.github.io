@@ -4,7 +4,6 @@ date = 2026-01-17T00:44:31+01:00
 draft = false
 tags = ['bitcoin', 'crypto', 'blockchain', 'btc', 'addresses']
 +++
-# How to debug Core
 
 Cuando alguien comienza a colaborar en Bitcoin Core, una de las primeras tareas a las que se enfrenta es la revisión de *pull request*. En muchos casos, un análisis estático del código es suficiente. Pero en otras ocasiones, es necesario realizar un análisis más profundo, donde la depuración se vuelve una herramienta fundamental. 
 
@@ -162,12 +161,6 @@ Si entendiste el proceso de depuración, habrás seguido estos pasos:
 6. Desde otro terminal, realizar la llamada RPC: `./build/bin/bitcoin-cli --regtest getblockchaininfo`.
 7. Una vez alcanzado el *breakpoint*, imprimir el valor de la variable: `print height`.
 
->[!warning]
->Desde que Bitcoin Core migró su sistema de compilación de *autotools* a CMake, la depuración presenta ciertos problemas (ver [#31204](https://github.com/bitcoin/bitcoin/issues/31204)). Como solución temporal, ejecuta el siguiente comando dentro de `gdb`:
->```
->set substitute-path /home/arejula27/workspaces/bitcoin/build/src /home/arejula27/workspaces/bitcoin/src
->```
-> Sustituye `/home/arejula27/workspaces/bitcoin` por ruta en la que hayas clonado el repositorio de Bitcoin Core en tu sistema. 
 
 ## Más *breakpoints*
 Vamos a realizar un segundo ejercicio para consolidar los conceptos aprendidos. El objetivo es colocar un *breakpoint* en el archivo `src/init.cpp` que solo se active cuando el flag`-txindex` se utilice al iniciar *bitcoind*.
